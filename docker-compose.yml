@@ -1,0 +1,23 @@
+version: '3.7'
+services:
+  db:
+    image: postgres:15.3-alpine
+    restart: unless-stopped
+    # volumes:
+    #   - ./tmp/pgsql:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: ${PGDATABASE}
+      POSTGRES_USER: ${PGUSER}
+      POSTGRES_PASSWORD: ${PGPASSWORD}
+  
+  jaeger:
+    image: jaegertracing/all-in-one:1.47
+    restart: unless-stopped
+    ports:
+      - 16686:16686   # web ui
+      - 4317:4317     # OTLP grpc
+      - 4318:4318     # OTLP http
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"

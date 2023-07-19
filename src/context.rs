@@ -5,6 +5,7 @@ use sqlx::{
     postgres::{PgConnectOptions, PgPoolOptions},
     ConnectOptions, Pool, Postgres,
 };
+use tracing::instrument;
 
 use crate::cli::{Args, PKG_NAME};
 
@@ -18,6 +19,7 @@ pub struct AppState {
 }
 
 impl AppState {
+    #[instrument(skip_all, name = "create_app_context")]
     pub async fn new(args: Args) -> anyhow::Result<Self> {
         Ok(Self {
             inner: Arc::new(AppStateInner::new(args).await?),

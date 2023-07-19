@@ -8,19 +8,28 @@ use crate::{
 
 mod cli;
 mod context;
+mod db;
 mod routes;
 mod telemetry;
 
 #[tokio::main]
 async fn main() {
+    // Load dotenv from here or parent directory - ignore any error
+    dotenvy::dotenv().ok();
+
     let args = Args::parse();
     telemetry::setup_tracing(&args).await;
     debug!("CMD args: {:#?}", args);
 
-    let Ok(ctx) = AppState::new(args.clone()).await else {
-        error!("Failed to init app context");
-        std::process::exit(3);
+    info!("Init app context");
+    let ctx = match AppState::new(args.clone()).await {
+        Ok(ctx) => ctx,
+        Err(err) => {
+            error!(err = ?err, "Failed to init app context");
+            std::process::exit(3);
+        }
     };
+
     match args.command {
         CliCommand::Migrate => {
             info!("Run database migrations");

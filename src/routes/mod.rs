@@ -20,7 +20,7 @@ pub async fn serve(bind: &SocketAddr, ctx: AppState) -> anyhow::Result<()> {
             .layer(TraceLayer::new_for_http()),
     );
 
-    info!("Start http server on {}", bind);
+    info!("Starting http server on http://{}/", bind);
     axum::Server::bind(bind)
         .serve(app.into_make_service())
         .await
