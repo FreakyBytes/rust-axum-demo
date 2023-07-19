@@ -1,4 +1,5 @@
 mod errors;
+mod links;
 
 use std::net::SocketAddr;
 
@@ -31,6 +32,7 @@ fn http_router(ctx: AppState) -> Router {
     Router::new()
         // tell bots: this site is not for them
         .route("/robots.txt", get(|| async { "User-agent: *\nDisallow: /" }))
+        .nest("/api/links", links::router())
         // .route("/:link_id", get(links::show_link_route).post(links::redeem_link_route))
         // .nest_service("/-/assets", statics_dir)
         .fallback(errors::handle_404)

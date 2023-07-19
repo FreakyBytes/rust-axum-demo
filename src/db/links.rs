@@ -7,7 +7,7 @@ use tracing::instrument;
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct Link {
-    pub link_id: i64,
+    pub link_id: i32,
     pub code: String,
     pub url: String,
     pub created_at: DateTime<Utc>,
@@ -15,7 +15,7 @@ pub struct Link {
 
 impl Link {
     #[instrument(skip(pool))]
-    pub async fn find_by_id(pool: &PgPool, link_id: i64) -> anyhow::Result<Option<Self>> {
+    pub async fn find_by_id(pool: &PgPool, link_id: i32) -> anyhow::Result<Option<Self>> {
         query_as!(Self, "Select * From links Where link_id = $1 Limit 1", link_id)
             .fetch_optional(pool)
             .await
