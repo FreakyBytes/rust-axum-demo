@@ -11,7 +11,7 @@ use crate::context::AppState;
 use crate::db::link_visit::LinkVisit;
 use crate::db::links::Link;
 
-type ApiResult<T: IntoResponse> = Result<T, ErrorMessage>;
+type ApiResult<T> = Result<T, ErrorMessage>;
 
 pub fn router() -> Router<AppState> {
     Router::new()
@@ -31,13 +31,23 @@ async fn create_link(
     State(ctx): State<AppState>,
     Json(payload): Json<CreateLinkPayload>,
 ) -> ApiResult<impl IntoResponse> {
-    Link::create(&ctx.pool, payload.url, payload.code)
+    let link = Link::create(&ctx.pool, &payload.url, payload.code.as_ref())
         .await
         .map(Json)
         .map_err(|err| {
             warn!(err = ?err, "Something, something can't save link");
             ErrorMessage::new(StatusCode::INTERNAL_SERVER_ERROR, "Failed to create link.")
-        })
+        })?;
+
+    metrics::increment_counter!(
+        "links_created",
+        "with_code" => match payload.code {
+            Some(_) => "true",
+            None => "false",
+        }
+    );
+
+    Ok(link)
 }
 
 #[instrument(skip(ctx))]
@@ -50,11 +60,14 @@ async fn follow_link(State(ctx): State<AppState>, Path(code): Path<String>) -> A
         })?
         .ok_or_else(|| ErrorMessage::new(StatusCode::NOT_FOUND, "Link not found."))?;
 
-    // spawn background task to mark visit
-    let link_id = link.link_id;
-    tokio::spawn(async move {
-        LinkVisit::mark_visit(&ctx.pool, link_id).await.ok();
-    });
+    // // spawn background task to mark visit
+    // let link_id = link.link_id;
+    // tokio::spawn(async move {
+    //     LinkVisit::mark_visit(&ctx.pool, link_id).await.ok();
+    // });
+
+    LinkVisit::mark_visit(&ctx.pool, link.link_id).await.ok();
+    metrics::increment_counter!("links_visited");
 
     Ok(Redirect::temporary(&link.url))
 }

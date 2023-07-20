@@ -30,9 +30,9 @@ impl Link {
             .context("Error fetching link by id")
     }
 
-    #[instrument(skip(pool, url))]
-    pub async fn create(pool: &PgPool, url: String, code: Option<String>) -> anyhow::Result<Self> {
-        let code = code.unwrap_or_else(|| nanoid!());
+    #[instrument(skip_all)]
+    pub async fn create<S: ToString>(pool: &PgPool, url: &str, code: Option<S>) -> anyhow::Result<Self> {
+        let code = code.map(|s| s.to_string()).unwrap_or_else(|| nanoid!());
 
         query_as!(
             Self,

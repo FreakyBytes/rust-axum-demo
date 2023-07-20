@@ -1,5 +1,6 @@
 use std::borrow::Cow;
 
+use metrics_exporter_prometheus::{Matcher, PrometheusBuilder, PrometheusHandle};
 use opentelemetry::sdk::trace::RandomIdGenerator;
 use opentelemetry::sdk::{propagation::TraceContextPropagator, Resource};
 use opentelemetry::{sdk::trace::Sampler, KeyValue};
@@ -104,4 +105,23 @@ pub(crate) async fn setup_tracing(args: &Args) {
         .with(telemetry_layer)
         .with(sentry_tracing_layer)
         .init();
+}
+
+pub fn setup_metrics() -> PrometheusHandle {
+    // cf. https://github.com/tokio-rs/axum/blob/main/examples/prometheus-metrics/src/main.rs
+    const EXPONENTIAL_SECONDS: &[f64] = &[0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0];
+
+    let handler = PrometheusBuilder::new()
+        .set_buckets_for_metric(
+            Matcher::Full("http_request_duration_seconds".to_string()),
+            EXPONENTIAL_SECONDS,
+        )
+        .unwrap()
+        .install_recorder()
+        .unwrap();
+
+    metrics::register_counter!("links_visited");
+    metrics::register_counter!("links_created");
+
+    handler
 }

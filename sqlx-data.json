@@ -1,0 +1,164 @@
+{
+  "db": "PostgreSQL",
+  "18548fc93d94ff6d87edb1e1166f23e64bdd39aa59c5eb97e2ac37009e644582": {
+    "describe": {
+      "columns": [
+        {
+          "name": "cnt",
+          "ordinal": 0,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "Select count(*) as cnt From link_visits Where link_id = $1"
+  },
+  "52ff73d643a791b6bfe80141c6536532bb6865361483eb868e14e6d337785507": {
+    "describe": {
+      "columns": [
+        {
+          "name": "link_id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "code",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "url",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 3,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "Select * From links Where code = $1 Limit 1"
+  },
+  "80f43f2bbf3b425d707e399ee34c355d3051e764fd117a9c1d1d05b51431672d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "link_id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "code",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "url",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 3,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "Select * From links Where link_id = $1 Limit 1"
+  },
+  "c5c23bf2f1e8258fab5c4d0050225968e028058714bdab01e5f2e0d61148c206": {
+    "describe": {
+      "columns": [
+        {
+          "name": "link_id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "ts",
+          "ordinal": 1,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "Insert Into link_visits (link_id) Values ($1) Returning *"
+  },
+  "d60e828301c6a2e2fef9599cf5863ac09366807ad9ea35d17d26e95feb047342": {
+    "describe": {
+      "columns": [
+        {
+          "name": "link_id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "code",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "url",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 3,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "Insert Into links (code, url) Values ($1, $2) Returning *"
+  }
+}

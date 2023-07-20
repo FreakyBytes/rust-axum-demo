@@ -1,19 +1,23 @@
 use std::{ops::Deref, str::FromStr, sync::Arc, time::Duration};
 
 use anyhow::Context;
+use metrics_exporter_prometheus::PrometheusHandle;
 use sqlx::{
     postgres::{PgConnectOptions, PgPoolOptions},
     ConnectOptions, Pool, Postgres,
 };
 use tracing::instrument;
 
-use crate::cli::{Args, PKG_NAME};
+use crate::{
+    cli::{Args, PKG_NAME},
+    telemetry,
+};
 
 ///
 /// Main application context container.
 /// All data resides in an Arc, so this struct is easily cloneable
 ///
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct AppState {
     inner: Arc<AppStateInner>,
 }
@@ -35,10 +39,10 @@ impl Deref for AppState {
     }
 }
 
-#[derive(Debug)]
 pub struct AppStateInner {
     pub args: Args,
     pub pool: Pool<Postgres>,
+    pub prom_handle: PrometheusHandle,
 }
 
 impl AppStateInner {
@@ -55,6 +59,12 @@ impl AppStateInner {
             .await
             .context("Failed to create DB pool")?;
 
-        Ok(Self { args, pool: db_pool })
+        let prom_handle = telemetry::setup_metrics();
+
+        Ok(Self {
+            args,
+            pool: db_pool,
+            prom_handle,
+        })
     }
 }
