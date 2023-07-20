@@ -30,9 +30,10 @@ pub async fn serve(bind: &SocketAddr, ctx: AppState) -> anyhow::Result<()> {
             .layer(opentelemetry_tracing_layer()),
     );
 
-    info!("Starting http server on http://{}/", bind);
-    axum::Server::bind(bind)
-        .serve(app.into_make_service())
+    let server = axum::Server::bind(bind).serve(app.into_make_service());
+    info!("Start http server on http://{}/", server.local_addr());
+    server
+        .with_graceful_shutdown(shutdown_signal())
         .await
         .context("Error starting HTTP server!")
 }
@@ -77,4 +78,29 @@ async fn metric_middleware<Body>(req: Request<Body>, next: Next<Body>) -> impl I
     metrics::histogram!("http_requests_duration_seconds", latency, &labels);
 
     resp
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        tokio::signal::ctrl_c().await.expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
+
+    tracing::warn!("Signal received, starting graceful shutdown");
+    opentelemetry::global::shutdown_tracer_provider();
 }
