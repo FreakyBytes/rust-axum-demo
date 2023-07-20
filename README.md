@@ -35,7 +35,7 @@
     `curl -i 'http://localhost:42069/api/links/foo/meta'`
   - Fetch metrics  
     `curl -i 'http://localhost:42069/metrics'`
-- Open Jäger and look at some of those nice traces: localhost:16686/search?limit=20&lookback=1h&maxDuration&minDuration&service=rust-axum-demo&tags={"http.scheme"%3A"HTTP"}
+- Open Jäger and look at some of those nice traces: [http://localhost:16686/](http://localhost:16686/search?limit=20&lookback=1h&maxDuration&minDuration&service=rust-axum-demo&tags={"http.scheme"%3A"HTTP"})
 
 ## Develop the demo
 
